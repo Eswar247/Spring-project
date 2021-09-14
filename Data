@@ -1,0 +1,44 @@
+# Loading all datasets in a loop
+data = dict()
+for i in dataset.list_datasets(context):
+    if '/raw/' in i:
+        key_ = i.replace('/raw/','')+'_df'
+        data[key_] = dataset.load_dataset(context,i)
+        # Standardize column names
+        data[key_].columns = string_cleaning(data[key_].columns,lower=True)
+  
+ # Transition Between stages 
+Base = flowgiston_base(fillcolor='lightblue',shape='box')
+
+class No(Base):
+    fillcolor = 'Red'
+    label = 'No'
+    fontcolor = 'white'
+    shape = 'octagon'
+
+class Note(Base):
+    fillcolor = 'lightyellow'
+    style = 'filled,dashed'
+    shape = 'box'
+    fontname = 'courier'
+
+chart = FlowgistonChart(Base)
+node=chart.start("Opportunity pipeline")
+Stage1=chart.node("Stage 1: Cancelled ")
+Stage2=chart.node("Stage 2: Design ")
+Stage3=chart.node("Stage 3: Development ")
+Stage4=chart.node("Stage 4: Design win ")
+Stage5=chart.node("Stage 5: Define ")
+Stage6=chart.node("Stage 6: Qualify ")
+Stage7=chart.node("Stage 7: Group ")
+Stage8=chart.node("Stage 8: Lost ")
+Stage9=chart.node("Stage 9: Production Win ")
+
+chart.edge(Stage6,Stage5,"")
+chart.edge(Stage5,Stage3,"")
+chart.edge(Stage3,Stage2,"")
+chart.edge(Stage2,Stage4,"")
+chart.edge(Stage4,Stage9,"")
+#chart.edge(Stage6,Stage5,"")
+
+#chart
