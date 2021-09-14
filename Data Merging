@@ -1,0 +1,304 @@
+# A. Merging the data with only common data (only the oppID present in both the data sets ) merging with product data having single product ID 
+test
+merge_id_common=[]#list of touples
+for ID in data['opp_data_df']['ïopportunity id'].unique():
+    #print(ID)
+    if (ID in data['prd_data_df']['ïopportunity id'].unique()) & (data['prd_data_df'][data['prd_data_df']['ïopportunity id']==ID]['product id'].nunique()<2): #only merge if both sheet has ID data
+        #print("hello1")
+        opp_ID_idx=data['opp_data_df'].index[data['opp_data_df']["ïopportunity id"]==ID].tolist()
+        prd_ID_idx=data['prd_data_df'].index[data['prd_data_df']["ïopportunity id"]==ID].tolist()
+        #print(opp_ID_idx)
+        #print(prd_ID_idx)
+        #print("hello2")
+        #print(data['opp_data_df'].loc[opp_ID_idx]['ïopportunity id'].unique())
+        #print(data['prd_data_df'].loc[prd_ID_idx]['ïopportunity id'].unique())
+        #print("hello3")
+        #print(data['opp_data_df'].loc[opp_ID_idx[0]]['ïopportunity id'])
+        #print("hello4")
+        for opp_idx in opp_ID_idx:
+            #print("\t hello opp",opp_idx)
+            #print(data['opp_data_df'].loc[opp_idx]['ïopportunity id'])
+            #print(opp_idx)
+            opp_date=data['opp_data_df'].loc[opp_idx]['opp decision date']
+            #print(opp_date)
+            min_time=365
+            for prd_idx in prd_ID_idx:
+                #print("\t \t hello prd",prd_idx)
+                #print(data['prd_data_df'].loc[prd_idx]['ïopportunity id'])
+                prd_date=data['prd_data_df'].loc[prd_idx]['prd decision date']
+                #print('  ',prd_idx,prd_date,abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days)
+                if min_time>=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days:
+                    min_time=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days
+                    m_opp_idx=opp_idx
+                    m_prd_idx=prd_idx
+            
+            merge_id_common.append((m_opp_idx,m_prd_idx))
+                    
+print(len(merge_id_common))
+#print(merge_id_common)
+
+len(merge_id_common)
+
+# merge_id_common
+columns_list=[x for x in data['opp_data_df'].columns]
+columns_list=columns_list+[x for x in data['prd_data_df'].columns[1:]]
+columns_list.remove('prd decision date')
+#print(columns_list)
+merged_df=pd.DataFrame(columns=columns_list)
+merged_temp_df=pd.DataFrame(columns=columns_list)
+
+for (opp_id,prd_id) in merge_id_common:
+    #print(data['prd_data_df'].loc[prd_id])# extract product dollar number of products as depedent variable
+    #print(data['opp_data_df'].loc[opp_id])
+    tempdf=data['opp_data_df'].loc[opp_id].values.tolist()
+    #print(tempdf)
+    
+    #tempdf2=pd.DataFrame(data['prd_data_df'][['product id', 'product status', 'product $', 'product quantity', 'snapshot time']].loc[prd_id].T)
+    if data['prd_data_df']['ïopportunity id'].loc[prd_id]!=data['opp_data_df']['ïopportunity id'].loc[opp_id]:
+        print('unverified ')
+    #print(tempdf2)
+    #print(tempdf2.columns)
+    #tempdf2=tempdf2['product id', 'product status', 'product $', 'product quantity', 'snapshot time']
+    
+    tempdf2=pd.DataFrame(data['prd_data_df'][['product id', 'product status', 'product $', 'product quantity', 'snapshot time']].loc[prd_id].T)
+    lstt=[]
+    for k in tempdf2.values.tolist():
+        lstt=lstt+k
+    lstt=tempdf+lstt
+    #tempdf['product id', 'product status', 'product $', 'product quantity', 'snapshot time']=''
+    #print(tempdf)
+    #.insert(2, "Age", [21, 23, 24, 21], True)
+    #print(lstt)
+    #merged_temp_df.iloc[0,0:14]=data['opp_data_df'].loc[opp_id].values.tolist()
+    #merged_temp_df.iloc[0,15:19]=lstt
+    #merged_temp_df.iloc[0]=lstt
+    #print(merged_temp_df)
+    #['product id', 'product status', 'product $', 'product quantity', 'snapshot time']])
+    #tempdf['product id', 'product status', 'product $', 'product quantity', 'snapshot time']=lstt
+    #print(tempdf)
+    merged_df.loc[len(merged_df.index)]=lstt
+    #merged_df=merged_df.append(merged_temp_df)
+    #merged_df[data['opp_data_df'].columns]
+#merged_df
+
+merged_df
+
+merged_df['ïopportunity id'].nunique()
+
+# B. Merging the data with only common data (only the oppID present in both the data sets ) merging with product data having Multiple product ID also
+#test
+merge_id_common_b=[]#list of touples
+for ID in data['opp_data_df']['ïopportunity id'].unique():
+    
+    if (ID in data['prd_data_df']['ïopportunity id'].unique()) & (data['prd_data_df'][data['prd_data_df']['ïopportunity id']==ID]['product id'].nunique()<2): #only merge if both sheet has ID data
+        
+        opp_ID_idx=data['opp_data_df'].index[data['opp_data_df']["ïopportunity id"]==ID].tolist()
+        prd_ID_idx=data['prd_data_df'].index[data['prd_data_df']["ïopportunity id"]==ID].tolist()
+        
+        for opp_idx in opp_ID_idx:
+            
+            opp_date=data['opp_data_df'].loc[opp_idx]['opp decision date']
+            
+            min_time=365
+            
+            for prd_idx in prd_ID_idx:
+                
+                prd_date=data['prd_data_df'].loc[prd_idx]['prd decision date']
+                
+                if min_time>=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days:
+                    min_time=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days
+                    m_opp_idx=opp_idx
+                    m_prd_idx=prd_idx
+            
+            merge_id_common_b.append((m_opp_idx,m_prd_idx))
+            
+    elif (ID in data['prd_data_df']['ïopportunity id'].unique()) & (data['prd_data_df'][data['prd_data_df']['ïopportunity id']==ID]['product id'].nunique()>=2):
+        opp_ID_idx=data['opp_data_df'].index[data['opp_data_df']["ïopportunity id"]==ID].tolist()
+        #prd_ID_idx=data['prd_data_df'].index[data['prd_data_df']["ïopportunity id"]==ID].tolist()
+        
+        for prdID_list in data['prd_data_df'][data['prd_data_df']['ïopportunity id']==ID]['product id'].unique():
+            prd_ID_idx=data['prd_data_df'].index[(data['prd_data_df']["ïopportunity id"]==ID) & (data['prd_data_df']['product id']==prdID_list)].tolist()
+            
+            for opp_idx in opp_ID_idx:
+
+                opp_date=data['opp_data_df'].loc[opp_idx]['opp decision date']
+
+                min_time=365
+
+                for prd_idx in prd_ID_idx:
+                    
+                    #[data['prd_data_df']['product id']==prdID_list]
+                    prd_date=data['prd_data_df'].loc[prd_idx]['prd decision date']
+
+                    if min_time>=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days:
+                        min_time=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days
+                        m_opp_idx=opp_idx
+                        m_prd_idx=prd_idx
+
+                merge_id_common_b.append((m_opp_idx,m_prd_idx))
+                
+print(len(merge_id_common_b))
+#print(merge_id_common_b)
+
+columns_list=[x for x in data['opp_data_df'].columns]
+columns_list=columns_list+[x for x in data['prd_data_df'].columns[1:]]
+columns_list.remove('prd decision date')
+#print(columns_list)
+merged_df_b=pd.DataFrame(columns=columns_list)
+merged_temp_df=pd.DataFrame(columns=columns_list)
+
+for (opp_id,prd_id) in merge_id_common_b:
+    #print(data['prd_data_df'].loc[prd_id])# extract product dollar number of products as depedent variable
+    #print(data['opp_data_df'].loc[opp_id])
+    tempdf=data['opp_data_df'].loc[opp_id].values.tolist()
+    #print(tempdf)
+    
+    #tempdf2=pd.DataFrame(data['prd_data_df'][['product id', 'product status', 'product $', 'product quantity', 'snapshot time']].loc[prd_id].T)
+    if data['prd_data_df']['ïopportunity id'].loc[prd_id]!=data['opp_data_df']['ïopportunity id'].loc[opp_id]:
+        print('unverified ')
+    #print(tempdf2)
+    #print(tempdf2.columns)
+    #tempdf2=tempdf2['product id', 'product status', 'product $', 'product quantity', 'snapshot time']
+    
+    tempdf2=pd.DataFrame(data['prd_data_df'][['product id', 'product status', 'product $', 'product quantity', 'snapshot time']].loc[prd_id].T)
+    lstt=[]
+    for k in tempdf2.values.tolist():
+        lstt=lstt+k
+    lstt=tempdf+lstt
+    #tempdf['product id', 'product status', 'product $', 'product quantity', 'snapshot time']=''
+    #print(tempdf)
+    #.insert(2, "Age", [21, 23, 24, 21], True)
+    #print(lstt)
+    #merged_temp_df.iloc[0,0:14]=data['opp_data_df'].loc[opp_id].values.tolist()
+    #merged_temp_df.iloc[0,15:19]=lstt
+    #merged_temp_df.iloc[0]=lstt
+    #print(merged_temp_df)
+    #['product id', 'product status', 'product $', 'product quantity', 'snapshot time']])
+    #tempdf['product id', 'product status', 'product $', 'product quantity', 'snapshot time']=lstt
+    #print(tempdf)
+    merged_df_b.loc[len(merged_df_b.index)]=lstt
+    #merged_df=merged_df.append(merged_temp_df)
+    #merged_df[data['opp_data_df'].columns]
+#merged_df
+
+merged_df_b.head()
+
+merged_df_b['ïopportunity id'].nunique()
+len(merged_df_b['ïopportunity id'])
+merged_df_b.info()
+
+# C. Using Left Join to join both the data and adding NA in unavailable data.
+merge_id_common_c=[]#list of touples
+for ID in data['opp_data_df']['ïopportunity id'].unique():
+    
+    if (ID in data['prd_data_df']['ïopportunity id'].unique()) & (data['prd_data_df'][data['prd_data_df']['ïopportunity id']==ID]['product id'].nunique()<2): #only merge if both sheet has ID data
+        
+        opp_ID_idx=data['opp_data_df'].index[data['opp_data_df']["ïopportunity id"]==ID].tolist()
+        prd_ID_idx=data['prd_data_df'].index[data['prd_data_df']["ïopportunity id"]==ID].tolist()
+        
+        for opp_idx in opp_ID_idx:
+            
+            opp_date=data['opp_data_df'].loc[opp_idx]['opp decision date']
+            
+            min_time=365
+            
+            for prd_idx in prd_ID_idx:
+                
+                prd_date=data['prd_data_df'].loc[prd_idx]['prd decision date']
+                
+                if min_time>=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days:
+                    min_time=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days
+                    m_opp_idx=opp_idx
+                    m_prd_idx=prd_idx
+            
+            merge_id_common_c.append((m_opp_idx,m_prd_idx))
+            
+    elif (ID in data['prd_data_df']['ïopportunity id'].unique()) & (data['prd_data_df'][data['prd_data_df']['ïopportunity id']==ID]['product id'].nunique()>=2):
+        opp_ID_idx=data['opp_data_df'].index[data['opp_data_df']["ïopportunity id"]==ID].tolist()
+        #prd_ID_idx=data['prd_data_df'].index[data['prd_data_df']["ïopportunity id"]==ID].tolist()
+        
+        for prdID_list in data['prd_data_df'][data['prd_data_df']['ïopportunity id']==ID]['product id'].unique():
+            prd_ID_idx=data['prd_data_df'].index[(data['prd_data_df']["ïopportunity id"]==ID) & (data['prd_data_df']['product id']==prdID_list)].tolist()
+            
+            for opp_idx in opp_ID_idx:
+
+                opp_date=data['opp_data_df'].loc[opp_idx]['opp decision date']
+
+                min_time=365
+
+                for prd_idx in prd_ID_idx:
+                    
+                    #[data['prd_data_df']['product id']==prdID_list]
+                    prd_date=data['prd_data_df'].loc[prd_idx]['prd decision date']
+
+                    if min_time>=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days:
+                        min_time=abs(pd.to_datetime(opp_date,format='%d-%m-%Y')-pd.to_datetime(prd_date,format='%d-%m-%Y')).days
+                        m_opp_idx=opp_idx
+                        m_prd_idx=prd_idx
+
+                merge_id_common_c.append((m_opp_idx,m_prd_idx))
+                
+print(len(merge_id_common_c))
+print(merge_id_common_c)
+
+columns_list=[x for x in data['opp_data_df'].columns]
+columns_list=columns_list+[x for x in data['prd_data_df'].columns[1:]]
+columns_list.remove('prd decision date')
+
+merged_df_c=pd.DataFrame(columns=columns_list)
+merged_temp_df=pd.DataFrame(columns=columns_list)
+
+for (opp_id,prd_id) in merge_id_common_c:
+    #print(data['prd_data_df'].loc[prd_id])# extract product dollar number of products as depedent variable
+    #print(data['opp_data_df'].loc[opp_id])
+    tempdf=data['opp_data_df'].loc[opp_id].values.tolist()
+    #print(tempdf)
+    
+    #tempdf2=pd.DataFrame(data['prd_data_df'][['product id', 'product status', 'product $', 'product quantity', 'snapshot time']].loc[prd_id].T)
+    if data['prd_data_df']['ïopportunity id'].loc[prd_id]!=data['opp_data_df']['ïopportunity id'].loc[opp_id]:
+        print('unverified ')
+    #print(tempdf2)
+    #print(tempdf2.columns)
+    #tempdf2=tempdf2['product id', 'product status', 'product $', 'product quantity', 'snapshot time']
+    
+    tempdf2=pd.DataFrame(data['prd_data_df'][['product id', 'product status', 'product $', 'product quantity', 'snapshot time']].loc[prd_id].T)
+    lstt=[]
+    for k in tempdf2.values.tolist():
+        lstt=lstt+k
+    lstt=tempdf+lstt
+    #tempdf['product id', 'product status', 'product $', 'product quantity', 'snapshot time']=''
+    #print(tempdf)
+    #.insert(2, "Age", [21, 23, 24, 21], True)
+    #print(lstt)
+    #merged_temp_df.iloc[0,0:14]=data['opp_data_df'].loc[opp_id].values.tolist()
+    #merged_temp_df.iloc[0,15:19]=lstt
+    #merged_temp_df.iloc[0]=lstt
+    #print(merged_temp_df)
+    #['product id', 'product status', 'product $', 'product quantity', 'snapshot time']])
+    #tempdf['product id', 'product status', 'product $', 'product quantity', 'snapshot time']=lstt
+    #print(tempdf)
+    merged_df_c.loc[len(merged_df_c.index)]=lstt
+    #merged_df=merged_df.append(merged_temp_df)
+    #merged_df[data['opp_data_df'].columns]
+#merged_df
+
+# Missing values summary
+
+summaries_and_plots = [analysis.get_missing_values_summary(merged_df_b, return_plot=True) ]
+#plots = [x[1] for x in summaries_and_plots]
+#display_as_tabs([(x, plots[idx]) for idx, x in enumerate(data.keys())])
+display_as_tabs([('merged', summaries_and_plots[0][1])])
+
+# Duplicate values
+summaries = [analysis.get_duplicate_columns(merged_df_b) ]
+#display_as_tabs([(x, summaries[idx]) for idx, x in enumerate(data.keys())])
+display_as_tabs([('merged', summaries)])
+
+# outliers check
+summaries = [analysis.get_outliers(merged_df_b)]
+display_as_tabs([('merged', summaries[0])])
+#display_as_tabs([(x, summaries[idx]) for idx, x in enumerate(data.keys())])
+
+#Health analysis report
+os.environ['DEBUG'] = 'true'
+health_reports_gen = [health.summary_report(merged_df_b,save_path=r'./health_report_merged_data.html')]
