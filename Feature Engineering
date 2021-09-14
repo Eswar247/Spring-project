@@ -1,0 +1,415 @@
+# A. Choosing Unique (Opp ID with Product ID) as a single row input (row integration at product level)
+merged_df_b[(merged_df_b['ïopportunity id']==19) & (merged_df_b['product id']==16377)] # this has to be a single row input after processing
+
+for OID in merged_df_b['ïopportunity id'].unique()[0:5]:
+    #print(OID)
+    for PID in merged_df_b[merged_df_b['ïopportunity id']==OID]['product id'].unique():
+        #print('  ',PID)
+        previous_stage=merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)]['transition to stage'].iloc[0]
+        #print(previous_stage)
+        transition_to_stage_count=0
+        for idx in merged_df_b.index[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)].tolist():
+            #print('    ',idx,merged_df_b.loc[idx]['transition to stage'])
+            if previous_stage!=merged_df_b.loc[idx]['transition to stage']:
+                
+                if previous_stage in ['Stage 4','Stage 9','Stage 1','Stage 8']:
+                    #print('Breaking')
+                    break
+                transition_to_stage_count+=1
+                previous_stage=merged_df_b.loc[idx]['transition to stage']
+        bx=merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)]['transition to stage'].unique()
+        opp_St='NA'
+        print(bx)
+        if ['Stage 4'] in bx or ['Stage 9'] in bx: 
+            opp_St='Won'
+        if ['Stage 1'] in bx or ['Stage 8'] in bx: 
+            opp_St='Loss'
+            
+        #print('        ',transition_to_stage_count)
+        print(OID,PID,transition_to_stage_count,opp_St)
+        
+merged_df_b[(merged_df_b['ïopportunity id']==93) & (merged_df_b['product id']==25860)] # this has to be a single row input after processing
+
+dict_stage={}
+for key in merged_df_b['transition to stage'].unique():
+    dict_stage[key]=0
+dict_stage
+
+dict_stage_days={}
+for key in merged_df_b['transition to stage'].unique():
+    dict_stage_days[key+' days']=0
+dict_stage_days
+
+# this cell only outputs sample collection from data
+for OID in merged_df_b['ïopportunity id'].unique()[0:1]:
+    #print(OID)
+    for PID in merged_df_b[merged_df_b['ïopportunity id']==OID]['product id'].unique():
+        list_of_stage_present=dict_stage.copy()# bool of 0 absent or 1 present
+        list_of_time_in_stage=dict_stage_days.copy()# number of days in stage
+        #print("initial\n",list_of_stage_present,list_of_time_in_stage)
+        #print('  ',PID)
+        previous_stage=merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)]['transition to stage'].iloc[0]
+        #print(previous_stage)
+        list_of_stage_present[previous_stage]=1
+        start_time=merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)]['transition from timestamp'].iloc[0]
+        transition_to_stage_count=0
+        
+        for idx in merged_df_b.index[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)].tolist():
+            #print('    ',idx,merged_df_b.loc[idx]['transition to stage'])
+            #print('Hello ',merged_df_b.loc[idx]['transition to stage'])
+            if previous_stage!=merged_df_b.loc[idx]['transition to stage']:
+                time_in_stage=(merged_df_b.loc[idx]['transition to timestamp']-start_time).days
+                start_time=merged_df_b.loc[idx]['transition to timestamp']
+                
+                transition_to_stage_count+=1
+                list_of_time_in_stage[previous_stage+' days']=time_in_stage
+                #print('hello2',list_of_time_in_stage)
+                previous_stage=merged_df_b.loc[idx]['transition to stage']
+                list_of_stage_present[previous_stage]=1
+                #print('hello3',list_of_stage_present,previous_stage)
+                if previous_stage in ['Stage 4','Stage 9','Stage 1','Stage 8']:
+                    break
+                
+        bx=merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)]['transition to stage'].unique()
+        opp_St=-1
+        #print(bx)
+        critical=0
+        if ['Stage 4'] in bx or ['Stage 9'] in bx: 
+            opp_St=1
+        if ['Stage 1'] in bx or ['Stage 8'] in bx:
+            if opp_St==1:
+                critical=1
+            opp_St=0
+            
+        
+        #print('        ',transition_to_stage_count)
+        if OID==5:
+            print('OID:',OID,
+                  '  PID:',PID,
+                  '  No of transition before decision:',transition_to_stage_count,
+                  '  Win:',opp_St,
+                  "  Critical:",critical,
+                  '\n\tlist_of_stage_present\n',list_of_stage_present,
+                  '\n\tlist_of_time_in_stage\n',list_of_time_in_stage
+                 )
+                 
+                 
+merged_df_b[(merged_df_b['ïopportunity id']==5) & (merged_df_b['product id']==404)]
+
+ merged_df_b.columns
+ 
+ merged_df_b['transition to stage'].unique()
+ 
+ columns_list=['ïopportunity id','product id','customer name','creation date','opp decision date','opportunity status',
+             'opportunity type','core consumption market','core product segment','core sales segment','geography','core product application',
+             'product status','product $','product quantity', 'snapshot time',
+             'Stage 3', 'Stage 4', 'Stage 5', 'Stage 9', 'Stage 2', 'Stage 6','Stage 1', 'Stage 8', 'Stage 7',
+             'Stage 3 days', 'Stage 4 days', 'Stage 5 days', 'Stage 9 days', 'Stage 2 days', 'Stage 6 days','Stage 1 days', 'Stage 8 days', 'Stage 7 days',
+             'Critical','Win']
+merged_df_b_a=pd.DataFrame(columns=columns_list)
+temp_df=pd.DataFrame(columns=columns_list)
+
+
+length=len(merged_df_b['ïopportunity id'].unique())
+i=0
+for OID in merged_df_b['ïopportunity id'].unique():
+    #print(OID)
+    for PID in merged_df_b[merged_df_b['ïopportunity id']==OID]['product id'].unique():
+        list_of_stage_present=dict_stage.copy()# bool of 0 absent or 1 present
+        list_of_time_in_stage=dict_stage_days.copy()# number of days in stage
+        #print("initial\n",list_of_stage_present,list_of_time_in_stage)
+        #print('  ',PID)
+        previous_stage=merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)]['transition to stage'].iloc[0]
+        #print(previous_stage)
+        list_of_stage_present[previous_stage]=1
+        start_time=merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)]['transition from timestamp'].iloc[0]
+        transition_to_stage_count=0
+        dix=-1
+        for idx in merged_df_b.index[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)].tolist():
+            #print('    ',idx,merged_df_b.loc[idx]['transition to stage'])
+            #print('Hello ',merged_df_b.loc[idx]['transition to stage'])
+            if previous_stage!=merged_df_b.loc[idx]['transition to stage']:
+                time_in_stage=(merged_df_b.loc[idx]['transition to timestamp']-start_time).days
+                start_time=merged_df_b.loc[idx]['transition to timestamp']
+                
+                transition_to_stage_count+=1
+                list_of_time_in_stage[previous_stage+' days']=time_in_stage
+                #print('hello2',list_of_time_in_stage)
+                previous_stage=merged_df_b.loc[idx]['transition to stage']
+                list_of_stage_present[previous_stage]=1
+                #print('hello3',list_of_stage_present,previous_stage)
+                if previous_stage in ['Stage 4','Stage 9','Stage 1','Stage 8']:
+                    dix=idx # saving the index of 
+                    break
+                
+        bx=merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)]['transition to stage'].unique()
+        won=-1
+        #print(bx)
+        critical=0
+        if ['Stage 4'] in bx or ['Stage 9'] in bx: 
+            won=1
+        if ['Stage 1'] in bx or ['Stage 8'] in bx:
+            if won==1:
+                critical=1
+            won=0
+            
+        row_dict={}
+        for key in merged_df_b.keys():
+            if key not in ['transition to stage', 'transition to timestamp','transition from stage name', 'transition from timestamp']:
+                if key=='opportunity type':
+                    deal=False
+                    design=False
+                    
+                    if ['Deal'] in merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)][key].unique():
+                        deal=True
+                    if ['Design'] in merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)][key].unique():
+                        design=True
+                        
+                    if deal and design:
+                        print("hello")
+            
+                        if merged_df_b.loc[idx][key] not in ['Deal', 'Design']:
+                            print('hello2')
+                            row_dict[key]=merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)][key].value_counts().idxmax()
+                        else:
+                            row_dict[key]=merged_df_b.loc[idx][key]
+                    elif design:
+                        row_dict[key]=['Design']
+                    elif deal:
+                        row_dict[key]=['Deal']
+                    else:
+                        row_dict[key]=None
+                        
+                elif dix!=-1:
+                    row_dict[key]=[merged_df_b.loc[idx][key]]
+                else:
+                    row_dict[key]=[merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)][key].unique()[-1]]
+                #print(key,[merged_df_b[(merged_df_b['ïopportunity id']==OID)&(merged_df_b['product id']==PID)][key].unique()])
+        for key in list_of_stage_present.keys():
+            row_dict[key]=[list_of_stage_present[key]]
+        for key in list_of_time_in_stage.keys():
+            row_dict[key]=[list_of_time_in_stage[key]]
+        
+        temp_df_copy=temp_df.copy()
+        for key in temp_df.keys():
+            if key=='Critical':
+                temp_df_copy[key]=critical
+            elif key=='Win':
+                temp_df_copy[key]=won
+            else:
+                temp_df_copy[key]=row_dict[key]
+                
+        merged_df_b_a=merged_df_b_a.append(temp_df_copy, ignore_index = True)
+            
+        
+    i+=1
+    echo(str(i/length))
+    #mymerge(dict_of_data,)
+    
+    merged_df_b_a.keys()
+    #merged_df_b_a
+    #merged_df_b_a[merged_df_b_a['Win']!=-1]
+    
+    # B. Choosing Unique Opp ID with all the product in it as a single row (row integration at the product level)
+    # 1. Removing irrelevant attributes
+    #merged_df_b_a.isna().sum()*100/len(merged_df_b_a['opportunity type'])
+    merged_df_b_a_copy=merged_df_b_a.copy()
+    #merged_df_b_a=merged_df_b_a_copy.copy()
+    
+    # Removing Open opportunity, snapshot time, customer name, stage 7
+    merged_df_b_a=merged_df_b_a[merged_df_b_a['Win']!=-1]
+    merged_df_b_a=merged_df_b_a.loc[:,merged_df_b_a.columns != 'ïopportunity id']
+    merged_df_b_a=merged_df_b_a.loc[:,merged_df_b_a.columns != 'product id']
+    merged_df_b_a=merged_df_b_a.loc[:,merged_df_b_a.columns != 'snapshot time']
+    merged_df_b_a=merged_df_b_a.loc[:,merged_df_b_a.columns!='customer name']
+    merged_df_b_a=merged_df_b_a.loc[:,merged_df_b_a.columns!='Stage 7']
+    merged_df_b_a=merged_df_b_a.loc[:,merged_df_b_a.columns!='product status']
+    merged_df_b_a=merged_df_b_a.loc[:,merged_df_b_a.columns!='opportunity status']
+    
+    # 2. Categorical transformation
+    merged_df_b_a['opportunity type'].value_counts()
+    len(merged_df_b_a['opportunity type'])
+    merged_df_b_a['core consumption market'].value_counts()
+    
+grp1=['Core Market 7','Core Market 16','Core Market 11','Core Market 9','Core Market 14','Core Market 10','Core Market 6','Core Market 8']
+merged_df_b_a['core consumption market']=merged_df_b_a['core consumption market'].apply(lambda x: 'Core Market 7/16/11/9/14/10/6/8' if x in grp1 else ('Core Market 19/12/17/13/18/5/15/3/2' if x!='Core Market 4' else x ))
+merged_df_b_a['core consumption market'].value_counts()
+
+merged_df_b_a['core product segment'].value_counts()
+
+
+grp1=['Core Prd Seg 4','Core Prd Seg 8','Core Prd Seg 5']#,'Core Market 9','Core Market 14','Core Market 10','Core Market 6','Core Market 8']
+merged_df_b_a['core product segment']=merged_df_b_a['core product segment'].apply(lambda x: 'Core Prd Seg 4/8/5' if x in grp1 else ('Core Prd Seg 6/7/2/9' if x!='Core Prd Seg 3' else x ))
+merged_df_b_a['core product segment'].value_counts()
+
+merged_df_b_a['core sales segment'].value_counts()
+
+
+grp1=['Sales Segment 1','Sales Segment 10','Sales Segment 9']#,'Core Market 9','Core Market 14','Core Market 10','Core Market 6','Core Market 8']
+grp2=['Sales Segment 4','Sales Segment 2','Sales Segment 3','Sales Segment 5','Sales Segment 12','Sales Segment 7']
+merged_df_b_a['core sales segment']=merged_df_b_a['core sales segment'].apply(lambda x: 'Sales Segment 1/10/9' if x in grp1 else ('Sales Segment 4/2/3/5/12/7' if x in grp2 else ( 'Sales Segment 14/6/11/18' if x!='Sales Segment 8' else x) ))
+merged_df_b_a['core sales segment'].value_counts()
+
+merged_df_b_a['core product application'].value_counts()
+
+rp2=['Prd App 15','Prd App 11','Prd App 21','Prd App 8','Prd App 5']
+grp3=['Prd App 22' ,'Prd App 14'     ]
+grp4=['Prd App 13'   ,'Prd App 4'  ]
+
+merged_df_b_a['core product application']=merged_df_b_a['core product application'].apply(lambda x: 'Prd App G4' if x in grp4 else ('Prd App G3' if x in grp3 else ('Prd App G2' if x in grp2 else 'Prd App G1') ))
+merged_df_b_a['core product application'].value_counts()
+
+merged_df_b_a_encoded = pd.get_dummies(merged_df_b_a, 
+                                       columns = ['geography', #4-1=3
+                                                  'opportunity type',#2-1=1
+                                                  'core product segment',
+                                                  'core consumption market',
+                                                  'core sales segment',
+                                                  'core product application'
+                                                 ])
+print(merged_df_b_a_encoded.columns)
+
+merged_df_b_a_encoded
+
+# 3. Dependent Variable
+merged_df_b_a_encoded['decision time']=merged_df_b_a_encoded.apply(lambda x: pd.to_datetime(x['opp decision date'],format='%d-%m-%Y')- pd.to_datetime(x['creation date'],format='%d-%m-%Y'), axis=1)#pd.to_datetime(x['creation date'],format='%d-%m-%Y')
+merged_df_b_a_encoded['decision time'].min()
+
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='creation date']
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='opp decision date']
+merged_df_b_a_encoded['decision time']=merged_df_b_a_encoded['decision time'].apply( lambda x: int(x.days))
+merged_df_b_a_encoded.isna().sum()/len(merged_df_b_a_encoded['decision time'])
+
+merged_df_b_a_encoded[(merged_df_b_a_encoded['opportunity type_Deal']==0)&(merged_df_b_a_encoded['opportunity type_Design']==0)]
+
+# 4. Dummy variable trap
+#geography_Geo 5
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='geography_Geo 5']
+
+#core product segment_Core Prd Seg 6/7/2/9
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='core product segment_Core Prd Seg 4/8/5']
+
+#core consumption market_Core Market 7/16/11/9/14/10/6/8
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='core consumption market_Core Market 7/16/11/9/14/10/6/8']
+
+#core sales segment_Sales Segment 4/2/3/5/12/7
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='core sales segment_Sales Segment 4/2/3/5/12/7']
+
+#core product application_Prd App G4
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='core product application_Prd App G4']
+
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='Critical']
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='Stage 4']
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='Stage 9']
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='Stage 7']
+merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='Stage 8']
+
+#merged_df_b_a_encoded=merged_df_b_a_encoded.loc[:,merged_df_b_a_encoded.columns!='opportunity type_Design']
+merged_df_b_a_encoded=merged_df_b_a_encoded.apply(pd.to_numeric)
+
+# Rescaling
+merged_df_b_a_encoded.columns
+
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+
+scaler = MinMaxScaler()
+
+scale_column_list=['product $', 'product quantity','Stage 3 days',
+       'Stage 4 days', 'Stage 5 days', 'Stage 9 days', 'Stage 2 days',
+       'Stage 6 days', 'Stage 1 days', 'Stage 8 days', 'Stage 7 days','decision time']
+merged_df_b_a_encoded[scale_column_list] = scaler.fit_transform(merged_df_b_a_encoded[scale_column_list])
+
+merged_df_b_a_encoded.describe().loc['max']
+
+ # 6. Checking Variance
+ merged_df_b_a_encoded_2=merged_df_b_a_encoded.copy()
+ test_list=[1 for x in range(100)]
+ test_list[0]=0
+ test_list
+ 
+ ean = sum(test_list) / len(test_list)
+res = sum((i - mean) ** 2 for i in test_list) / len(test_list)
+res
+
+merged_df_b_a_encoded_2.var()
+
+variance = merged_df_b_a_encoded_2.var()
+columns = merged_df_b_a_encoded_2.columns
+
+variance_limit=0.009
+
+variable = [ ]
+
+for i in range(0,len(variance)):
+    if variance[i]>=variance_limit: #setting the threshold as 1%
+        variable.append(columns[i])
+print(variable)
+
+merged_df_b_a_encoded_2=merged_df_b_a_encoded_2[variable]
+
+merged_df_b_a_encoded_2.var()
+
+df=merged_df_b_a_encoded_2.copy()
+
+df.index
+
+df['Win'].unique()
+
+gdf=df[['Win','decision time']].groupby('Win').mean()
+gdf
+
+gdf.plot.bar(y='decision time',color={'blue','green'})
+
+# 7. Feature and Label Split
+
+from sklearn.model_selection import train_test_split
+X=df.drop('Win',axis=1)
+Y=df[['Win']]
+
+# 8. Checking Multi-Collinearity
+
+X.columns
+corr = X.corr()
+sns.set(rc={'figure.figsize':(20,20)})
+sns.heatmap(corr)
+
+columns = np.full((corr.shape[0],), True, dtype=bool)
+#print(columns)
+co_fact=.5
+count=0
+for i in range(corr.shape[0]):
+    for j in range(i+1, corr.shape[0]):
+        #print(i,j,corr.iloc[i,j])
+        if corr.iloc[i,j] >= co_fact:
+            print(i,j,corr.iloc[i,j])
+            if columns[j]:
+                columns[j] = False
+                count+=1
+print("Number of columns having more than ",co_fact,"  corelation are :",count)
+selected_columns = X.columns[columns]
+#print(columns)
+print(selected_columns)
+X=X[selected_columns]
+#print(X[selected_columns])
+
+X.info()
+
+rain_X, testv_X, train_Y, testv_Y = train_test_split(X, Y, test_size=0.3, random_state=context.random_seed)
+test_X, val_X, test_Y, val_Y = train_test_split(testv_X, testv_Y, test_size=0.3, random_state=context.random_seed)
+
+train_X = train_X.reset_index(drop=True)
+train_Y = train_Y.reset_index(drop=True)
+test_X = test_X.reset_index(drop=True)
+test_Y = test_Y.reset_index(drop=True)
+val_X = val_X.reset_index(drop=True)
+val_Y = val_Y.reset_index(drop=True)
+
+#print(f"Saving training datasets")
+#dataset.save_dataset(context, train_X, 'train/OPF/features')
+#dataset.save_dataset(context, train_y, 'train/OPF/target')
+
+#print(f"Saving test datasets")
+#dataset.save_dataset(context, test_X, 'test/OPF/features')
+#dataset.save_dataset(context, test_y, 'test/OPF/target'
+    
