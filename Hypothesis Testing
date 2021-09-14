@@ -1,0 +1,296 @@
+# 1.Time taken between stage transitions significantly different across geographies?
+
+lst=data['opp_data_df']['transition to stage'].unique()
+
+geo_transition_dict_2={}
+
+for g in data['opp_data_df']['geography'].unique():
+    geo_transition_dict_2[g]=[]
+
+for g in data['opp_data_df']['geography'].unique(): #unique geography
+    
+    print(g)
+    df_geo= data['opp_data_df'][data['opp_data_df']['geography']==g] #all data for a perticular geography
+    
+    for ID in df_geo['ïopportunity id'].unique():   #unique id
+        
+        
+        df_ID_data=df_geo[df_geo['ïopportunity id']==ID]  # all data for unique ID and above geography
+        
+        start_stage=df_ID_data["transition from stage name"].iloc[0]
+        start_time=df_ID_data["transition from timestamp"].iloc[0]
+        
+        for i in range(len(df_ID_data["transition from stage name"])): # getting the time between trasitions for this unique ID
+            if start_stage != df_ID_data["transition from stage name"].iloc[i]:
+                end_stage=df_ID_data["transition from stage name"].iloc[i]
+                end_time=df_ID_data["transition from timestamp"].iloc[i]
+                time_at_stage=(end_time-start_time).total_seconds()/(60*60*24) # time taken in number of days
+                #stage_transition_dict_2[start_stage]+=time_at_stage
+                geo_transition_dict_2[g]=geo_transition_dict_2[g]+[time_at_stage]
+                start_stage=end_stage
+                start_time=end_time
+    
+    #for i in stage_transition_dict:  #averaging out the readings
+    #    stage_transition_dict_2[i]=stage_transition_dict_2[i]/df_geo['ïopportunity id'].nunique()
+        
+        
+    #geo_transition_dict_2[g]=stage_transition_dict_2
+    
+    #print(geo_transition_dict)  
+    
+print("Geo   Count    Average")
+for g in data['opp_data_df']['geography'].unique():
+    print(g,len(geo_transition_dict_2[g]),sum(geo_transition_dict_2[g])/len(geo_transition_dict_2[g]))#,max(geo_transition_dict_2[g]),min(geo_transition_dict_2[g]))
+    
+    
+sum(geo_transition_dict_2['Geo 3'])/len(geo_transition_dict_2['Geo 3'])
+g_lst=data['opp_data_df']['geography'].unique()
+
+for i in range(len(g_lst)):
+    for j in range(i):
+        if i!=j:
+            print(g_lst[i],g_lst[j])
+            print(ttest_ind(geo_transition_dict_2[g_lst[i]],geo_transition_dict_2[g_lst[j]]))
+            
+            
+ def compare_2_groups(arr_1, arr_2, alpha):
+    stat, p = ttest_ind(arr_1, arr_2)
+    print('Statistics=%.3f, p=%.3f' % (stat, p))
+    if p > alpha:
+        print('Same distributions (fail to reject H0)')
+    else:
+        print('Different distributions (reject H0)')
+        
+col=['b','k','orange','red']
+def plot_distribution(inp,i):
+    #plt.figure()
+    ax = sns.distplot(inp,kde=False)
+    plt.axvline(np.mean(inp), 
+                color=col[i], 
+                linestyle="dashed",
+                linewidth=5)
+    _, max_ = plt.ylim()
+    plt.text(
+        np.mean(inp) + (i+1)*np.mean(inp) / 10,
+        max_ - (i+1)*max_ / 12,
+        "Mean: {:.2f}".format(np.mean(inp)),
+    )
+    return plt.figure
+    
+alpha=0.05
+for i in range(len(g_lst)):
+    for j in range(i):
+        if i!=j:
+            print('\n',g_lst[i],g_lst[j])
+            compare_2_groups(geo_transition_dict_2[g_lst[i]],geo_transition_dict_2[g_lst[j]],alpha)
+            
+            
+alpha=0.05
+for i in range(len(g_lst)):
+    for j in range(i):
+        if i!=j:
+            print('\n',g_lst[i],g_lst[j])
+            compare_2_groups(geo_transition_dict_2[g_lst[i]],geo_transition_dict_2[g_lst[j]],alpha)
+            plt.figure()
+            plt.xlabel('Number of Days',fontsize=18)
+            plt.ylabel('Frequency',fontsize=18)
+            plt.title(g_lst[i]+' vs '+g_lst[j],fontsize=20)
+            plot_distribution(geo_transition_dict_2[g_lst[i]],i)
+            plot_distribution(geo_transition_dict_2[g_lst[j]],j)
+            
+            
+plt.figure()
+for i in range(len(g_lst)):
+    #g_lst[i]
+    #geo_transition_dict_2[g_lst[i]]
+    plot_distribution(geo_transition_dict_2[g_lst[i]],i)
+#ax1 = sns.distplot(fr_sales)
+#ax2 = sns.distplot(ger_sales)
+#plt.axvline(np.mean(fr_sales), color='b', linestyle='dashed', linewidth=5)
+#plt.axvline(np.mean(ger_sales), color='orange', linestyle='dashed', linewidth=5)
+
+
+geo_transition_dict={}
+for g in data['opp_data_df']['geography'].unique(): #unique geography
+    
+    print(g)
+    df_geo= data['opp_data_df'][data['opp_data_df']['geography']==g] #all data for a perticular geography
+    
+    stage_transition_dict={}
+    for st in lst:
+        stage_transition_dict[st]=0
+    
+    for ID in df_geo['ïopportunity id'].unique():   #unique id
+        
+        
+        df_ID_data=df_geo[df_geo['ïopportunity id']==ID]  # all data for unique ID and above geography
+        
+        start_stage=df_ID_data["transition from stage name"].iloc[0]
+        start_time=df_ID_data["transition from timestamp"].iloc[0]
+        
+        for i in range(len(df_ID_data["transition from stage name"])): # getting the time between trasitions for this unique ID
+            if start_stage != df_ID_data["transition from stage name"].iloc[i]:
+                end_stage=df_ID_data["transition from stage name"].iloc[i]
+                end_time=df_ID_data["transition from timestamp"].iloc[i]
+                time_at_stage=(end_time-start_time).total_seconds()/(60*60*24) # time taken in number of days
+                stage_transition_dict[start_stage]+=time_at_stage
+                start_stage=end_stage
+                start_time=end_time
+    
+    for i in stage_transition_dict:  #averaging out the readings
+        stage_transition_dict[i]=stage_transition_dict[i]/df_geo['ïopportunity id'].nunique()
+        
+        
+    geo_transition_dict[g]=stage_transition_dict
+    
+    #print(geo_transition_dict
+    
+    
+# geo_transition_dict
+df_geo_transition=pd.DataFrame(geo_transition_dict)
+df_geo_transition
+df_geo_transition.plot(kind='bar')
+
+# 2.Are Losses (Opportunity lines in Lost stage) more likely to happen in early stages (Qualify and define)
+early_stage=['Stage 5','Stage 6']
+late_stage=['Stage 2','Stage 3','Stage 4','Stage 9','Stage 7']
+loss_stage=['Stage 8','Stage 1']
+won_stage=['Stage 4', 'Stage 9']
+
+data['opp_data_df'].columns
+
+list_attributes=['geography','core consumption market','core sales segment','core product segment','core product application']
+
+mega_dict_for_early_late_loss={}
+for attributes in list_attributes:
+    attri_dict_for_early_loss={}
+    for g in data['opp_data_df'][attributes].unique(): #unique geography
+
+        #print(g)
+        df_ID_data= data['opp_data_df'][data['opp_data_df'][attributes]==g]#[0:500] #all data for a perticular geography
+
+        early_late_loss={'early' : 0,'late': 0}
+
+
+        #for ID in df_geo['ïopportunity id'].unique():   #unique id
+
+
+        #df_ID_data=df_geo[df_geo['ïopportunity id']==ID]  # all data for unique ID and above geography
+
+        #start_stage=df_ID_data["transition from stage name"].iloc[0]
+        #start_time=df_ID_data["transition from timestamp"].iloc[0]
+
+        for i in range(len(df_ID_data["transition from stage name"])): # getting the time between trasitions for this unique ID
+                start_stage=df_ID_data["transition from stage name"].iloc[i]
+                #if start_stage != df_ID_data["transition from stage name"].iloc[i]:
+                end_stage=df_ID_data["transition to stage"].iloc[i]
+                #end_time=df_ID_data["transition from timestamp"].iloc[i]
+                #time_at_stage=(end_time-start_time).total_seconds()/(60*60*24) # time taken in number of days
+                #print(i,start_stage,end_stage)
+                if (start_stage in early_stage) and (end_stage in loss_stage):
+                    early_late_loss["early"]=1+early_late_loss["early"]
+                    #print(i,"early")
+                    #print(i,start_stage,end_stage)
+                if (start_stage in late_stage) and (end_stage in loss_stage):
+                    early_late_loss["late"]=1+early_late_loss["late"]
+                    #print(i,"late")
+                    #print(i,start_stage,end_stage)
+                #start_stage=end_stage
+                #start_time=end_time
+    
+        #for i in stage_transition_dict:  #averaging out the readings
+        #    stage_transition_dict_for_early_loss[i]=stage_transition_dict_for_early_loss[i]/df_geo['ïopportunity id'].nunique()
+
+
+        attri_dict_for_early_loss[g]=early_late_loss
+
+        #print(geo_transition_dict)    
+    mega_dict_for_early_late_loss[attributes]=attri_dict_for_early_loss
+    
+# mega_dict_for_early_late_loss
+pd.DataFrame(mega_dict_for_early_late_loss['geography']).sum(axis=1)
+
+fig, axes = plt.subplots(nrows=5, ncols=1,figsize=(10,20))
+i=0
+
+for key  in mega_dict_for_early_late_loss:
+    
+    #print(key,mega_dict_for_early_late_loss[key])
+    pdf=pd.DataFrame(mega_dict_for_early_late_loss[key]).T
+    plt.figure()
+    pdf.plot(kind='bar',ax=axes[i],fontsize=13,color=[  'green','darkblue'])
+    
+    #pdf.plot.box(ax=axes[i,1])
+    i=i+1
+    #df2.plot(ax=axes[0,1])
+print(i)
+
+# 3.Does the proportion of Won lines in an Opportunity significantly different across Product Categories?
+data['opp_data_df'][ data['opp_data_df']['core product segment']=='Core Prd Seg 3']
+
+list_attributes=[
+                #'geography',
+                #'core consumption market',
+                #'core sales segment',
+                'core product segment',
+                'core product application'
+                ]
+
+mega_dict_for_won_loss={}
+for attributes in list_attributes:
+    attri_dict_for_won_loss={}
+    
+    for g in data['opp_data_df'][attributes].unique(): #unique attri
+
+        print(g)
+        df_g_data= data['opp_data_df'][data['opp_data_df'][attributes]==g] #all data for a perticular attri
+        #print(df_g_data)
+        loss_won_stage={'won' : 0,'loss': 0}
+        
+        for ID in df_g_data["ïopportunity id"].unique():
+            
+            df_ID_data=df_g_data[df_g_data["ïopportunity id"]==ID].reset_index()
+            #print(df_ID_data)
+            for i in range(len(df_ID_data["transition from stage name"])): # getting the time between trasitions for this unique ID
+                start_stage=df_ID_data["transition from stage name"].iloc[i]
+                #if start_stage != df_ID_data["transition from stage name"].iloc[i]:
+                end_stage=df_ID_data["transition to stage"].iloc[i]
+                
+                #print(i,start_stage,end_stage)
+                if ((end_stage in won_stage)) or df_ID_data['opportunity status'].iloc[i]=='Closed/Won':
+                    loss_won_stage["won"]=1+loss_won_stage["won"]
+                    break
+                    
+                if ((end_stage in loss_stage)) or df_ID_data['opportunity status'].iloc[i]=='Closed/Lost':
+                    loss_won_stage["loss"]=1+loss_won_stage["loss"]
+                    break
+                   
+        attri_dict_for_won_loss[g]=loss_won_stage
+
+        #print(geo_transition_dict)    
+    mega_dict_for_won_loss[attributes]=attri_dict_for_won_loss
+    
+    
+fig, axes = plt.subplots(nrows=2, ncols=1,figsize=(20,15))
+i=0
+for key  in mega_dict_for_won_loss:
+    #print(key,mega_dict_for_early_late_loss[key])
+    pdf=pd.DataFrame(mega_dict_for_won_loss[key]).T
+    pdf.plot(kind='bar',ax=axes[i])
+    #pdf.plot.box(ax=axes[i,1])
+    i=i+1
+    #df2.plot(ax=axes[0,1])
+    
+    
+fig, axes = plt.subplots(nrows=2, ncols=1,figsize=(20,15))
+i=0
+for key  in mega_dict_for_won_loss:
+    #print(key,mega_dict_for_early_late_loss[key])
+    pdf=pd.DataFrame(mega_dict_for_won_loss[key]).T
+    pdf['ratio']=pdf['won']/pdf['loss'].fillna(pdf['won'])
+    pdf['ratio'].plot(kind='bar',ax=axes[i],fontsize =16)
+    #pdf.plot.box(ax=axes[i,1])
+    i=i+1
+    #df2.plot(ax=axes[0,1])
+    
+    
