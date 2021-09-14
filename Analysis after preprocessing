@@ -1,0 +1,26 @@
+# Health analysis
+summaries = [analysis.get_variable_summary(data[x]) for x in data.keys()]
+display_as_tabs([(x, summaries[idx]) for idx, x in enumerate(data.keys())])
+data["opp_data_df"].isna().sum()*100/len(data["opp_data_df"]['ïopportunity id'])
+data["prd_data_df"].isna().sum()*100/len(data["prd_data_df"]['ïopportunity id'])
+
+summaries_and_plots = [analysis.get_data_health_summary(data[x], return_plot=True) for x in data.keys()]
+plots = [x[1] for x in summaries_and_plots]
+display_as_tabs([(x, plots[idx]) for idx, x in enumerate(data.keys())])
+
+# Missing values summary
+summaries_and_plots = [analysis.get_missing_values_summary(data[x], return_plot=True) for x in data.keys()]
+plots = [x[1] for x in summaries_and_plots]
+display_as_tabs([(x, plots[idx]) for idx, x in enumerate(data.keys())])
+
+# Duplicate values
+summaries = [analysis.get_duplicate_columns(data[x]) for x in data.keys()]
+display_as_tabs([(x, summaries[idx]) for idx, x in enumerate(data.keys())])
+
+# Outliers check
+summaries = [analysis.get_outliers(data[x]) for x in data.keys()]
+display_as_tabs([(x, summaries[idx]) for idx, x in enumerate(data.keys())])
+
+# health analysis report
+os.environ['DEBUG'] = 'true'
+health_reports_gen = [health.summary_report(data[x],save_path=r'./health_report_'+x+'_processed.html') for x in data.keys()]
