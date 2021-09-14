@@ -1,0 +1,187 @@
+data_backup=data.copy()
+
+# Dropping risk status column(60+percenntage null) and product segment name(all NA value)
+data["opp_data_df"].drop("risk status",axis=1,inplace=True)
+data["prd_data_df"].drop("product segment name",axis=1,inplace=True)
+
+#Dropping invalid data (creation date ahead of decision date)
+data['opp_data_df']=data['opp_data_df'][pd.to_datetime(data['opp_data_df']['creation date'],format='%d-%m-%Y')<=pd.to_datetime(data['opp_data_df']['opp decision date'],format='%d-%m-%Y')]
+
+# Filling missing timestamp datadata['opp_data_df']["transition to timestamp"].isna().sum()
+data['opp_data_df']["transition to stage"].isna().sum()
+data['opp_data_df']["transition from timestamp"].isna().sum()
+data['opp_data_df']["transition from stage name"].isna().sum()
+data['opp_data_df']["transition to timestamp"].isna().sum()
+data['opp_data_df']["transition to stage"].isna().sum()
+
+#Checking if transition from timestamp and transition from stage name have same index (it should have the same length)
+data['opp_data_df']['transition from stage name'][data['opp_data_df']["transition from timestamp"].isna()].isna().sum()
+
+# Imputing transition from timestamp and transition from stage name to transition to timestamp and transition to stage respectively
+data['opp_data_df']['transition from stage name'][data['opp_data_df']["transition from timestamp"].isna()]=data['opp_data_df']['transition to stage'][data['opp_data_df']["transition from timestamp"].isna()]
+data['opp_data_df']['transition from timestamp'][data['opp_data_df']["transition from timestamp"].isna()]=data['opp_data_df']['transition to timestamp'][data['opp_data_df']["transition from timestamp"].isna()]
+
+# Converting the data type of time colum from float to timestamp
+data['opp_data_df']["transition to timestamp"].isna().sum()
+data['opp_data_df']["transition from timestamp"].isna().sum()
+data['opp_data_df']["transition from timestamp"][0]
+data['opp_data_df']["transition to timestamp"][0]
+data['opp_data_df']["transition to timestamp"]=data['opp_data_df']["transition to timestamp"].apply( lambda x: pd.to_datetime(x, format='%Y%m%d%H%M%S'))
+data['opp_data_df']["transition from timestamp"]=data['opp_data_df']["transition from timestamp"].apply( lambda x: pd.to_datetime(x, format='%Y%m%d%H%M%S'))
+data['opp_data_df']["transition from timestamp"][0]
+data['opp_data_df']["transition to timestamp"][0]
+data['prd_data_df']['snapshot time'].isna().sum()
+data['prd_data_df']['snapshot time']=data['prd_data_df']['snapshot time'].apply( lambda x: pd.to_datetime(x, format='%Y%m%d%H%M%S'))
+
+# Imputing geography data for inconsistency
+data['opp_data_df']["geography"].isna().sum()
+data['opp_data_df']["geography"].unique()
+(data['opp_data_df']["geography"]=='Geo NA').sum()
+(data['opp_data_df']["geography"]=='Geo 1').sum()
+(data['opp_data_df']["geography"]=='Geo 2').sum()
+(data['opp_data_df']["geography"]=='Geo 3').sum()
+(data['opp_data_df']["geography"]=='Geo 4').sum()
+(data['opp_data_df']["geography"]=='Geo 5').sum()
+
+# checking geo data to stay constant for a unique opp ID or not
+def geoChecker(x):
+    if x=='Geo 1':
+        return True
+    if x=='Geo NA':
+    
+#somthing which didnot work
+if False:
+    for ID in data['opp_data_df']['ïopportunity id'].unique()[0:4]:
+        print(ID)
+        ls=data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID]["geography"].unique()
+        print(ls)
+        lenls=len(ls)
+        ls=ls[ls!='Geo NA']
+        ls=ls[ls!='Geo 1']
+        print(ls)
+        print(data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID].size)
+        #print(len(data['opp_data_df'].loc[[ID],:]))
+        if len(ls)<lenls and len(ls):
+            #data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID]["geography"]=data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID]["geography"].apply(lambda x: ls[0] if  geoChecker(x) else x)
+
+            print(data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID]["geography"].apply(lambda x: ls[0] if  geoChecker(x) else x))
+        #for i in range()
+
+        #print(ls[ls=='Geo NA' or ls=='Geo 1'])
+    
+    
+        return True
+    return False
+    
+  
+  
+dict_id_geo={}
+for ID in data['opp_data_df']['ïopportunity id'].unique():
+    #print(ID)
+    ls=data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID]["geography"].unique()
+    #print(ls)
+    lenls=len(ls)
+    ls=ls[ls!='Geo NA']
+    ls=ls[ls!='Geo 1']
+    #print(ls)
+    #print(data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID].size)
+    #print(len(data['opp_data_df'].loc[[ID],:]))
+    if len(ls)<lenls and len(ls):
+        #data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID]["geography"]=data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID]["geography"].apply(lambda x: ls[0] if  geoChecker(x) else x)
+        #print(ID,ls[0])
+        dict_id_geo[ID]=ls[0]
+        #print(data['opp_data_df'][data['opp_data_df']['ïopportunity id']==ID]["geography"].apply(lambda x: ls[0] if  geoChecker(x) else x))
+
+dict_id_geo[19]
+
+data['opp_data_df'].reset_index(drop=True,inplace=True) # without this line index will be errorsum
+for i in range(len(data['opp_data_df']['geography'])):
+        #print(data['opp_data_df'].iloc[i])
+        #print(i)
+        if geoChecker(data['opp_data_df'].iloc[i]['geography']):
+            #print("yes")
+            #print(data['opp_data_df'].iloc[i]['geography'],dict_id_geo[data['opp_data_df'].iloc[i]['ïopportunity id']])
+            if data['opp_data_df'].iloc[i]['ïopportunity id'] in dict_id_geo:
+                data['opp_data_df']['geography'][i]=dict_id_geo[data['opp_data_df'].iloc[i]['ïopportunity id']]
+                
+ data['opp_data_df']['geography'][0]
+ (data['opp_data_df']["geography"]=='Geo NA').sum()
+ (data['opp_data_df']["geography"]=='Geo 1').sum()
+ (data['opp_data_df']["geography"]=='Geo 2').sum()
+ (data['opp_data_df']["geography"]=='Geo 3').sum()
+ (data['opp_data_df']["geography"]=='Geo 4').sum()
+ (data['opp_data_df']["geography"]=='Geo 5').sum()
+ 
+ #Checking the left geo1 and geo na data
+ data['opp_data_df'][data['opp_data_df']["geography"]=='Geo 1']
+ data['opp_data_df'][data['opp_data_df']["ïopportunity id"]==2869]
+ 
+ # geo 1 and geo na data can now be safely omitted from data
+ data['opp_data_df']=data['opp_data_df'][data['opp_data_df']["geography"]!='Geo 1']
+ data['opp_data_df']=data['opp_data_df'][data['opp_data_df']["geography"]!='Geo NA']
+ (data['opp_data_df']["geography"]=='Geo NA').sum()
+ (data['opp_data_df']["geography"]=='Geo 1').sum()
+ (data['opp_data_df']["geography"]=='Geo 2').sum()
+ (data['opp_data_df']["geography"]=='Geo 3').sum()
+ (data['opp_data_df']["geography"]=='Geo 4').sum()
+ (data['opp_data_df']["geography"]=='Geo 5').sum()
+ 
+ # Dealing with opportunity type
+ data['opp_data_df']["opportunity type"].unique()
+ data['opp_data_df']["opportunity type"].isna().sum()/len(data['opp_data_df']["opportunity type"])
+ data['opp_data_df'][data['opp_data_df']["ïopportunity id"]==data['opp_data_df']["ïopportunity id"].unique()[0]]
+ data['opp_data_df'][data['opp_data_df']["ïopportunity id"]==data['opp_data_df']["ïopportunity id"].unique()[0]]['opportunity type'].unique()
+ data['opp_data_df']['opportunity type'].unique()
+ 
+x = data['opp_data_df']['opportunity type'].unique()[0]
+x in ['Deal','Design']
+
+for ID in data['opp_data_df']["ïopportunity id"].unique():
+    x=data['opp_data_df'][data['opp_data_df']["ïopportunity id"]==ID]['opportunity type'].unique()
+    if len(x)>=3:
+        print('\nfound',ID,x)
+        #print(data['opp_data_df'][data['opp_data_df']["ïopportunity id"]==ID]['opportunity type'].tolist())
+        #print(data['opp_data_df'][data['opp_data_df']["ïopportunity id"]==ID]['transition to stage'].tolist())
+        print(data['opp_data_df'][data['opp_data_df']["ïopportunity id"]==ID]['opportunity type'].value_counts())
+        print(data['opp_data_df'][data['opp_data_df']["ïopportunity id"]==ID]['opportunity type'].value_counts().idxmax())
+        
+ # Dealing With Opportunity status
+ data['opp_data_df']["opportunity status"].unique()
+ data['opp_data_df']["opportunity status"].value_counts()
+ data['opp_data_df'][data['opp_data_df']["ïopportunity id"]==data['opp_data_df']["ïopportunity id"].unique()[0]]["opportunity status"].unique()
+ 
+ # Removing Irrelevant data
+ # Keeping the first row of the opportunity creation then only the data when there is a change in stage
+ relevant_idx=[]
+
+for ID in data['opp_data_df']["ïopportunity id"].unique():
+            
+    ID_idx=data['opp_data_df'].index[data['opp_data_df']["ïopportunity id"]==ID].tolist()
+    First=True
+    
+    for i in ID_idx: # 
+        
+        start_stage=data['opp_data_df']["transition from stage name"].iloc[i]
+        start_time=data['opp_data_df']["transition from timestamp"].iloc[i]
+        
+        if First:
+            end_stage=data['opp_data_df']["transition to stage"].iloc[i]
+            end_time=data['opp_data_df']["transition to timestamp"].iloc[i]
+            start_stage=end_stage
+            start_time=end_time
+            relevant_idx.append(i) #save the very first row of opportunity creation
+            First=False
+        elif start_stage != data['opp_data_df']["transition to stage"].iloc[i]:
+            
+            end_stage=data['opp_data_df']["transition to stage"].iloc[i]
+            end_time=data['opp_data_df']["transition to timestamp"].iloc[i]
+            
+            relevant_idx.append(i) # Save the transition stage row
+            
+            start_stage=end_stage
+            start_time=end_time
+            
+print(len(relevant_idx))
+
+data['opp_data_df']=data['opp_data_df'].iloc[relevant_idx]
+
