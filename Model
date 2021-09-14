@@ -1,0 +1,240 @@
+# Modeling
+
+from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_auc_score,recall_score, precision_score, f1_score, plot_roc_curve
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, average_precision_score
+
+Y.sum()
+
+X.skew()
+
+X.kurt()
+X.describe().T
+
+# Logistic Regression
+from sklearn.linear_model import LogisticRegression
+
+myLogisticRegressionModel= LogisticRegression(max_iter=400)
+myLogisticRegressionModel.fit(train_X,train_Y['Win'])
+pred_Y = myLogisticRegressionModel.predict(test_X)
+
+from sklearn import metrics
+print('Confusion Matrix:\n',metrics.confusion_matrix(test_Y,pred_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(test_Y,pred_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(test_Y['Win'],pred_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(test_Y['Win'],pred_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(test_Y['Win'],pred_Y)))
+print('R2 score = ',metrics.r2_score(test_Y['Win'],pred_Y))
+
+myLogisticRegressionModel.coef_
+
+import statsmodels.api as sm
+X2 = sm.add_constant(train_X)
+est = sm.Logit(train_Y['Win'], X2)
+est2 = est.fit(method='bfgs',maxiter=300)
+print(est2.summary())
+
+# Feature Importance And Selection
+def backward_elimination_logit(data, target,significance_level = 0.05):
+    features = data.columns.tolist()
+    while(len(features)>0):
+        features_with_constant = sm.add_constant(data[features])
+        model=sm.Logit(target, features_with_constant).fit(method='bfgs',maxiter=300)
+        #print(model.summary())
+        p_values = model.pvalues[1:]
+        max_p_value = p_values.max()
+        if(max_p_value >= significance_level):
+            excluded_feature = p_values.idxmax()
+            #print('\n Removing :',excluded_feature,'p value: ' ,max_p_value)
+            features.remove(excluded_feature)
+        else:
+            print(model.summary())
+            break 
+    return features
+
+def backward_elimination_ols(data, target,significance_level = 0.05):
+    features = data.columns.tolist()
+    while(len(features)>0):
+        features_with_constant = sm.add_constant(data[features])
+        model=sm.OLS(target, features_with_constant).fit()
+        #print(model.summary())
+        p_values = model.pvalues[1:]
+        max_p_value = p_values.max()
+        if(max_p_value >= significance_level):
+            excluded_feature = p_values.idxmax()
+            #print('\n Removing :',excluded_feature,'p value: ' ,max_p_value)
+            features.remove(excluded_feature)
+        else:
+            print(model.summary())
+            break 
+    return features
+    
+featur_selected_column_ols=backward_elimination_ols(train_X,train_Y)
+featur_selected_column_logit=backward_elimination_logit(train_X,train_Y)
+print('\n\nfeatur_selected_column_ols',featur_selected_column_ols)
+print('featur_selected_column_logit',featur_selected_column_logit)
+
+featur_selected_column_logit
+
+#  Optimized Logistic Regression Model
+myLogisticRegressionModel_optimised= LogisticRegression(max_iter=400)
+myLogisticRegressionModel_optimised.fit(train_X,train_Y['Win'])
+print("Coefficients:",myLogisticRegressionModel_optimised.coef_)
+
+print('Training set')
+pred_train_Y = myLogisticRegressionModel_optimised.predict(train_X)
+
+
+print('Confusion Matrix:\n',metrics.confusion_matrix(train_Y,pred_train_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(train_Y,pred_train_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(train_Y,pred_train_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(train_Y,pred_train_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(train_Y,pred_train_Y)))
+print('R2 score = ',metrics.r2_score(train_Y,pred_train_Y))
+print(classification_report(train_Y,pred_train_Y))
+plt.rcParams["figure.figsize"] = (5,5)
+plot_roc_curve(myLogisticRegressionModel_optimised, train_X, train_Y) 
+plt.show()
+print('Test Set')
+
+pred_Y = myLogisticRegressionModel_optimised.predict(test_X)
+
+
+print('Confusion Matrix:\n',metrics.confusion_matrix(test_Y,pred_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(test_Y,pred_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(test_Y['Win'],pred_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(test_Y['Win'],pred_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(test_Y['Win'],pred_Y)))
+print('R2 score = ',metrics.r2_score(test_Y['Win'],pred_Y))
+print(classification_report(test_Y,pred_Y))
+plt.rcParams["figure.figsize"] = (5,5)
+plot_roc_curve(myLogisticRegressionModel_optimised, test_X, test_Y) 
+plt.show()
+
+print("Validation Set")
+pred_val_Y = myLogisticRegressionModel_optimised.predict(val_X)
+
+print('Confusion Matrix:\n',metrics.confusion_matrix(val_Y,pred_val_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(val_Y,pred_val_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(val_Y,pred_val_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(val_Y,pred_val_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(val_Y,pred_val_Y)))
+print('R2 score = ',metrics.r2_score(val_Y,pred_val_Y))
+
+print(classification_report(val_Y,pred_val_Y))
+plot_roc_curve(myLogisticRegressionModel_optimised, val_X, val_Y) 
+plt.show()
+
+# Decision Tree
+from sklearn.tree import DecisionTreeClassifier
+
+# Create Decision Tree classifier object
+clf = DecisionTreeClassifier(max_depth=5)
+# Train Decision Tree Classifier
+clf = clf.fit(train_X,train_Y)
+#Predict the response for test dataset
+pred_Y = clf.predict(test_X)
+print('Confusion Matrix:\n',metrics.confusion_matrix(test_Y,pred_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(test_Y,pred_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(test_Y['Win'],pred_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(test_Y['Win'],pred_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(test_Y['Win'],pred_Y)))
+print('R2 score = ',metrics.r2_score(test_Y['Win'],pred_Y))
+plt.rcParams["figure.figsize"] = (5,5)
+plot_roc_curve(clf, test_X, test_Y) 
+plt.show()
+
+print("Validation Set")
+pred_val_Y = clf.predict(val_X)
+
+print('Confusion Matrix:\n',metrics.confusion_matrix(val_Y,pred_val_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(val_Y,pred_val_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(val_Y,pred_val_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(val_Y,pred_val_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(val_Y,pred_val_Y)))
+print('R2 score = ',metrics.r2_score(val_Y,pred_val_Y))
+
+print(classification_report(val_Y,pred_val_Y))
+plot_roc_curve(clf, val_X, val_Y) 
+plt.show()
+
+# Random Forest
+from sklearn.ensemble import RandomForestClassifier
+
+#Create a Gaussian Classifier
+clf=RandomForestClassifier(n_estimators=50)
+#Train the model using the training sets y_pred=clf.predict(X_test)
+clf.fit(train_X,train_Y)
+
+print('Training set')
+pred_train_Y = clf.predict(train_X)
+
+
+print('Confusion Matrix:\n',metrics.confusion_matrix(train_Y,pred_train_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(train_Y,pred_train_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(train_Y,pred_train_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(train_Y,pred_train_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(train_Y,pred_train_Y)))
+print('R2 score = ',metrics.r2_score(train_Y,pred_train_Y))
+print(classification_report(train_Y,pred_train_Y))
+plt.rcParams["figure.figsize"] = (5,5)
+plot_roc_curve(clf, train_X, train_Y) 
+plt.show()
+print('Test Set')
+
+pred_Y=clf.predict(test_X)
+print('Confusion Matrix:\n',metrics.confusion_matrix(test_Y,pred_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(test_Y,pred_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(test_Y['Win'],pred_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(test_Y['Win'],pred_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(test_Y['Win'],pred_Y)))
+print('R2 score = ',metrics.r2_score(test_Y['Win'],pred_Y))
+plt.rcParams["figure.figsize"] = (5,5)
+plot_roc_curve(clf, test_X, test_Y) 
+plt.show()
+
+print("Validation Set")
+pred_val_Y = clf.predict(val_X)
+
+print('Confusion Matrix:\n',metrics.confusion_matrix(val_Y,pred_val_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(val_Y,pred_val_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(val_Y,pred_val_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(val_Y,pred_val_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(val_Y,pred_val_Y)))
+print('R2 score = ',metrics.r2_score(val_Y,pred_val_Y))
+
+print(classification_report(val_Y,pred_val_Y))
+plot_roc_curve(clf, val_X, val_Y) 
+plt.show()
+
+# XGBoot Classifier
+from xgboost import XGBClassifier
+
+# fit model no training data
+model = XGBClassifier()
+model.fit(train_X, train_Y)
+pred_Y = model.predict(test_X)
+print('Confusion Matrix:\n',metrics.confusion_matrix(test_Y,pred_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(test_Y,pred_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(test_Y['Win'],pred_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(test_Y['Win'],pred_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(test_Y['Win'],pred_Y)))
+print('R2 score = ',metrics.r2_score(test_Y['Win'],pred_Y))
+plt.rcParams["figure.figsize"] = (5,5)
+plot_roc_curve(model, test_X, test_Y) 
+plt.show()
+
+print("Validation Set")
+pred_val_Y = model.predict(val_X)
+
+print('Confusion Matrix:\n',metrics.confusion_matrix(val_Y,pred_val_Y))
+print('Accuracy Score:  ',metrics.accuracy_score(val_Y,pred_val_Y))
+print('Mean Abs Error:  ',metrics.mean_absolute_error(val_Y,pred_val_Y))
+print('Mean Squ Error:  ',metrics.mean_squared_error(val_Y,pred_val_Y))
+print('RMS Error     :  ',np.sqrt(metrics.mean_squared_error(val_Y,pred_val_Y)))
+print('R2 score = ',metrics.r2_score(val_Y,pred_val_Y))
+
+print(classification_report(val_Y,pred_val_Y))
+plot_roc_curve(model, val_X, val_Y) 
+plt.show()
+
